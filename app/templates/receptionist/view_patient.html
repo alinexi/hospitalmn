@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Patient Details</h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{{ url_for('receptionist.edit_patient', patient_id=patient.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Patient
+            </a>
+            <a href="{{ url_for('receptionist.list_patients') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">Personal Information</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="35%">Full Name</th>
+                            <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date of Birth</th>
+                            <td>{{ patient.date_of_birth.strftime('%B %d, %Y') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Gender</th>
+                            <td>{{ patient.gender }}</td>
+                        </tr>
+                        <tr>
+                            <th>Blood Type</th>
+                            <td>{{ patient.blood_type or 'Not specified' }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="card-title">Contact Information</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="35%">Phone</th>
+                            <td>{{ patient.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ patient.email or 'Not provided' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Address</th>
+                            <td>{{ patient.address }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 class="card-title">Emergency Contact</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="35%">Name</th>
+                            <td>{{ patient.emergency_contact_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone</th>
+                            <td>{{ patient.emergency_contact_phone }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="card-title">Medical Information</h5>
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>Allergies</strong>
+                        </div>
+                        <div class="card-body">
+                            {{ patient.allergies or 'No known allergies' }}
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>Medical History</strong>
+                        </div>
+                        <div class="card-body">
+                            {{ patient.medical_history or 'No medical history recorded' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="card-title">Record Information</h5>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="20%">Created</th>
+                            <td>{{ patient.created_at.strftime('%B %d, %Y %I:%M %p') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated</th>
+                            <td>{{ patient.updated_at.strftime('%B %d, %Y %I:%M %p') }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Section -->
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Appointments</h5>
+            <a href="{{ url_for('receptionist.schedule_appointment') }}?patient_id={{ patient.id }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Schedule New Appointment
+            </a>
+        </div>
+        <div class="card-body">
+            {% if patient.appointments %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Doctor</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in patient.appointments|sort(attribute='appointment_date', reverse=True) %}
+                            <tr>
+                                <td>{{ appointment.appointment_date.strftime('%B %d, %Y %I:%M %p') }}</td>
+                                <td>Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</td>
+                                <td>{{ appointment.reason }}</td>
+                                <td>
+                                    <span class="badge badge-{{ {
+                                        'scheduled': 'primary',
+                                        'completed': 'success',
+                                        'cancelled': 'danger',
+                                        'no_show': 'warning'
+                                    }[appointment.status] }}">
+                                        {{ appointment.status|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'scheduled' %}
+                                        <button class="btn btn-sm btn-danger" onclick="cancelAppointment({{ appointment.id }})">
+                                            Cancel
+                                        </button>
+                                        <a href="{{ url_for('receptionist.schedule_appointment') }}?reschedule={{ appointment.id }}" class="btn btn-sm btn-primary">
+                                            Reschedule
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No appointments found for this patient.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Appointment Confirmation Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Appointment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to cancel this appointment?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No, Keep It</button>
+                <button type="button" class="btn btn-danger" id="confirmCancel">Yes, Cancel It</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+let appointmentToCancel = null;
+
+function cancelAppointment(appointmentId) {
+    appointmentToCancel = appointmentId;
+    $('#cancelModal').modal('show');
+}
+
+$('#confirmCancel').click(function() {
+    if (appointmentToCancel) {
+        fetch(`{{ url_for('receptionist.cancel_appointment', appointment_id=0) }}`.replace('0', appointmentToCancel), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': "{{ csrf_token() }}"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error cancelling appointment');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error cancelling appointment');
+        });
+    }
+    $('#cancelModal').modal('hide');
+});
+</script>
+{% endblock %} 
