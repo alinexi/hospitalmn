@@ -4,85 +4,155 @@
 <div class="container mt-4">
     <h1>Register New Patient</h1>
     <form method="POST" class="needs-validation" novalidate>
+        {{ form.csrf_token }}
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="first_name" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                {{ form.first_name.label(class="form-label") }}
+                {{ form.first_name(class="form-control") }}
+                {% if form.first_name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.first_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
             <div class="col-md-6 mb-3">
-                <label for="last_name" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                {{ form.last_name.label(class="form-label") }}
+                {{ form.last_name(class="form-control") }}
+                {% if form.last_name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.last_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
         
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="date_of_birth" class="form-label">Date of Birth</label>
-                <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                {{ form.date_of_birth.label(class="form-label") }}
+                {{ form.date_of_birth(class="form-control") }}
+                {% if form.date_of_birth.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.date_of_birth.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
             <div class="col-md-6 mb-3">
-                <label for="gender" class="form-label">Gender</label>
-                <select class="form-control" id="gender" name="gender" required>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
+                {{ form.gender.label(class="form-label") }}
+                {{ form.gender(class="form-control") }}
+                {% if form.gender.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.gender.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" name="phone" required>
+                {{ form.phone.label(class="form-label") }}
+                {{ form.phone(class="form-control") }}
+                {% if form.phone.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.phone.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
             <div class="col-md-6 mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control") }}
+                {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.email.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="address" class="form-label">Address</label>
-            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+            {{ form.address.label(class="form-label") }}
+            {{ form.address(class="form-control", rows=2) }}
+            {% if form.address.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.address.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="emergency_contact_name" class="form-label">Emergency Contact Name</label>
-                <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name" required>
+                {{ form.emergency_contact_name.label(class="form-label") }}
+                {{ form.emergency_contact_name(class="form-control") }}
+                {% if form.emergency_contact_name.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.emergency_contact_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
             <div class="col-md-6 mb-3">
-                <label for="emergency_contact_phone" class="form-label">Emergency Contact Phone</label>
-                <input type="tel" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone" required>
+                {{ form.emergency_contact_phone.label(class="form-label") }}
+                {{ form.emergency_contact_phone(class="form-control") }}
+                {% if form.emergency_contact_phone.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.emergency_contact_phone.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="blood_type" class="form-label">Blood Type</label>
-                <select class="form-control" id="blood_type" name="blood_type">
-                    <option value="">Select Blood Type</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                </select>
+                {{ form.blood_type.label(class="form-label") }}
+                {{ form.blood_type(class="form-control") }}
+                {% if form.blood_type.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.blood_type.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="allergies" class="form-label">Allergies</label>
-            <textarea class="form-control" id="allergies" name="allergies" rows="2"></textarea>
+            {{ form.allergies.label(class="form-label") }}
+            {{ form.allergies(class="form-control", rows=2) }}
+            {% if form.allergies.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.allergies.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <div class="mb-3">
-            <label for="medical_history" class="form-label">Medical History</label>
-            <textarea class="form-control" id="medical_history" name="medical_history" rows="3"></textarea>
+            {{ form.medical_history.label(class="form-label") }}
+            {{ form.medical_history(class="form-control", rows=3) }}
+            {% if form.medical_history.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.medical_history.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <div class="mb-3">
@@ -91,4 +161,26 @@
         </div>
     </form>
 </div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}
+
 {% endblock %} 

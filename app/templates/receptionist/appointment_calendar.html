@@ -1,1 +1,211 @@
- 
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.css" rel="stylesheet" />
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    .doctor-filter {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Appointment Calendar</h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{{ url_for('receptionist.schedule_appointment') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Schedule New Appointment
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Filter by Doctor</h5>
+                    <div class="doctor-filter">
+                        <select id="doctor-select" class="form-control">
+                            <option value="">All Doctors</option>
+                            {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Details Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Appointment Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="appointmentDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="cancelAppointment">Cancel Appointment</button>
+                <button type="button" class="btn btn-primary" id="rescheduleAppointment">Reschedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction/main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var doctorSelect = document.getElementById('doctor-select');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        plugins: ['dayGrid', 'timeGrid', 'interaction'],
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        defaultView: 'timeGridWeek',
+        navLinks: true,
+        selectable: true,
+        selectMirror: true,
+        select: function(arg) {
+            window.location.href = "{{ url_for('receptionist.schedule_appointment') }}";
+        },
+        eventClick: function(info) {
+            showAppointmentDetails(info.event);
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            var url = "{{ url_for('receptionist.get_appointments') }}";
+            var params = {
+                start: fetchInfo.start.toISOString().split('T')[0],
+                end: fetchInfo.end.toISOString().split('T')[0]
+            };
+            
+            if (doctorSelect.value) {
+                params.doctor_id = doctorSelect.value;
+            }
+            
+            fetch(url + '?' + new URLSearchParams(params))
+                .then(response => response.json())
+                .then(data => {
+                    const events = data.map(event => ({
+                        ...event,
+                        className: getEventClass(event.status)
+                    }));
+                    successCallback(events);
+                })
+                .catch(error => {
+                    console.error('Error fetching appointments:', error);
+                    failureCallback(error);
+                });
+        }
+    });
+
+    function getEventClass(status) {
+        switch(status) {
+            case 'scheduled':
+                return 'bg-primary';
+            case 'completed':
+                return 'bg-success';
+            case 'cancelled':
+                return 'bg-danger';
+            case 'no_show':
+                return 'bg-warning';
+            default:
+                return 'bg-secondary';
+        }
+    }
+
+    calendar.render();
+
+    // Update calendar when doctor filter changes
+    doctorSelect.addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+
+    function showAppointmentDetails(event) {
+        var modal = $('#appointmentModal');
+        var details = $('#appointmentDetails');
+        
+        details.html(`
+            <p><strong>Patient:</strong> ${event.title}</p>
+            <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
+            <p><strong>Status:</strong> ${event.extendedProps.status}</p>
+        `);
+
+        $('#cancelAppointment').data('appointment-id', event.id);
+        $('#rescheduleAppointment').data('appointment-id', event.id);
+        
+        // Hide cancel button if appointment is already cancelled or completed
+        if (['cancelled', 'completed'].includes(event.extendedProps.status)) {
+            $('#cancelAppointment').hide();
+            $('#rescheduleAppointment').hide();
+        } else {
+            $('#cancelAppointment').show();
+            $('#rescheduleAppointment').show();
+        }
+        
+        modal.modal('show');
+    }
+
+    // Handle appointment cancellation
+    $('#cancelAppointment').click(function() {
+        var appointmentId = $(this).data('appointment-id');
+        if (confirm('Are you sure you want to cancel this appointment?')) {
+            fetch(`{{ url_for('receptionist.cancel_appointment', appointment_id=0) }}`.replace('0', appointmentId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    $('#appointmentModal').modal('hide');
+                    calendar.refetchEvents();
+                    alert('Appointment cancelled successfully');
+                } else {
+                    alert('Error cancelling appointment');
+                }
+            });
+        }
+    });
+
+    // Handle appointment rescheduling
+    $('#rescheduleAppointment').click(function() {
+        var appointmentId = $(this).data('appointment-id');
+        window.location.href = `{{ url_for('receptionist.schedule_appointment') }}?reschedule=${appointmentId}`;
+    });
+});
+</script>
+{% endblock %} 
