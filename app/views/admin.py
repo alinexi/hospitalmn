@@ -4,6 +4,8 @@ from flask_login import login_required, current_user
 from functools import wraps
 from flask import abort
 from flask_sqlalchemy import SQLAlchemy
+import json
+import os
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -33,12 +35,38 @@ def manage_users():
 @login_required
 @admin_required
 def system_settings():
-    # Logic to manage system settings
-    return render_template('admin/settings.html')
+    settings = {}
+    if os.path.exists('system_settings.json'):
+        with open('system_settings.json', 'r') as f:
+            settings = json.load(f)
+    if request.method == 'POST':
+        settings['password_policy'] = request.form['password_policy']
+        with open('system_settings.json', 'w') as f:
+            json.dump(settings, f)
+        flash('Settings updated successfully.', 'success')
+    return render_template('admin/settings.html', settings=settings)
 
 @admin_bp.route('/audit_logs', methods=['GET'])
 @login_required
 @admin_required
 def view_audit_logs():
-    # Logic to view audit logs
-    return render_template('admin/audit_logs.html') 
+    # Example: Fetch audit logs from a table called AuditLog
+    audit_logs = []
+    if hasattr(db.Model, 'AuditLog'):
+        audit_logs = db.session.query(db.Model.AuditLog).all()
+    return render_template('admin/audit_logs.html', audit_logs=audit_logs)
+
+@admin_bp.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    roles = Role.query.all()
+    if request.method == 'POST':
+        user.username = request.form['username']
+        user.email = request.form['email']
+        user.role_id = request.form['role_id']
+        db.session.commit()
+        flash('User updated successfully.', 'success')
+        return redirect(url_for('admin.manage_users'))
+    return render_template('admin/edit_user.html', user=user, roles=roles) 

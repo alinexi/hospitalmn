@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
+from app.models.user import User, Role
+from app import db
 from functools import wraps
-from flask import abort
 
 patient_bp = Blueprint('patient', __name__, url_prefix='/patient')
 
@@ -24,12 +25,13 @@ def dashboard():
 @login_required
 @patient_required
 def view_records():
-    # Logic to view patient records
-    return render_template('patient/records.html')
+    # Replace with actual query for patient's own records
+    records = []
+    return render_template('patient/records.html', records=records)
 
-@patient_bp.route('/appointments', methods=['GET', 'POST'])
+@patient_bp.route('/appointments', methods=['GET'])
 @login_required
 @patient_required
 def manage_appointments():
-    # Logic to request or cancel appointments
-    return render_template('patient/appointments.html') 
+    appointments = []  # Replace with actual query for patient's appointments
+    return render_template('patient/appointments.html', appointments=appointments) 
