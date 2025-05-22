@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import or_
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, SelectField, TelField, EmailField, TextAreaField, TimeField, IntegerField
-from wtforms.validators import DataRequired, Email, Optional, ValidationError
+from wtforms.validators import DataRequired, Optional, ValidationError
 
 receptionist_bp = Blueprint('receptionist', __name__, url_prefix='/receptionist')
 
@@ -19,7 +19,7 @@ class PatientRegistrationForm(FlaskForm):
     date_of_birth = DateField('Date of Birth', validators=[DataRequired()])
     gender = SelectField('Gender', choices=[('', 'Select Gender'), ('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], validators=[DataRequired()])
     phone = TelField('Phone Number', validators=[DataRequired()])
-    email = EmailField('Email', validators=[Optional(), Email()])
+    email = EmailField('Email', validators=[Optional()])
     address = TextAreaField('Address', validators=[DataRequired()])
     emergency_contact_name = StringField('Emergency Contact Name', validators=[DataRequired()])
     emergency_contact_phone = TelField('Emergency Contact Phone', validators=[DataRequired()])
@@ -122,7 +122,19 @@ def list_patients():
             Patient.email.ilike(f'%{search_query}%')
         ))
     
-    patients = query.order_by(Patient.last_name).paginate(page=page, per_page=per_page)
+    try:
+        patients = query.order_by(Patient.last_name).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
+        if not patients.items and page > 1:
+            # If no items on this page but page > 1, redirect to page 1
+            return redirect(url_for('receptionist.list_patients', search=search_query))
+    except Exception as e:
+        flash(f'Error retrieving patient list: {str(e)}', 'danger')
+        patients = []
+    
     return render_template('receptionist/patients.html', patients=patients, search_query=search_query)
 
 @receptionist_bp.route('/patient/<int:patient_id>')

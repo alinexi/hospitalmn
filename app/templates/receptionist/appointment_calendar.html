@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
+{% block title %}Appointment Calendar{% endblock %}
+
 {% block styles %}
 {{ super() }}
-<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.css" rel="stylesheet" />
+<!-- FullCalendar CSS -->
+<link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/main.min.css' rel='stylesheet' />
 <style>
     .fc-event {
         cursor: pointer;
@@ -12,63 +13,70 @@
     .doctor-filter {
         margin-bottom: 20px;
     }
+    #calendar {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.5em;
+    }
+    .fc .fc-button {
+        padding: 0.25rem 0.5rem;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1>Appointment Calendar</h1>
-        </div>
-        <div class="col-md-4 text-right">
-            <a href="{{ url_for('receptionist.schedule_appointment') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Schedule New Appointment
-            </a>
-        </div>
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>Appointment Calendar</h1>
     </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('receptionist.schedule_appointment') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Schedule New Appointment
+        </a>
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Filter by Doctor</h5>
-                    <div class="doctor-filter">
-                        <select id="doctor-select" class="form-control">
-                            <option value="">All Doctors</option>
-                            {% for doctor in doctors %}
-                            <option value="{{ doctor.id }}">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Filter by Doctor</h5>
+                <div class="doctor-filter">
+                    <select id="doctor-select" class="form-select">
+                        <option value="">All Doctors</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
         </div>
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-body">
-                    <div id="calendar"></div>
-                </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body">
+                <div id="calendar"></div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Appointment Details Modal -->
-<div class="modal fade" id="appointmentModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Appointment Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title" id="appointmentModalLabel">Appointment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div id="appointmentDetails"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-danger" id="cancelAppointment">Cancel Appointment</button>
                 <button type="button" class="btn btn-primary" id="rescheduleAppointment">Reschedule</button>
             </div>
@@ -79,22 +87,22 @@
 
 {% block scripts %}
 {{ super() }}
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core/main.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid/main.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/timegrid/main.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction/main.js"></script>
+<!-- FullCalendar JS -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.global.min.js'></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var doctorSelect = document.getElementById('doctor-select');
+    var appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+    
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: ['dayGrid', 'timeGrid', 'interaction'],
-        header: {
+        timeZone: 'local',
+        initialView: 'timeGridWeek',
+        headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        defaultView: 'timeGridWeek',
         navLinks: true,
         selectable: true,
         selectMirror: true,
@@ -107,8 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
         events: function(fetchInfo, successCallback, failureCallback) {
             var url = "{{ url_for('receptionist.get_appointments') }}";
             var params = {
-                start: fetchInfo.start.toISOString().split('T')[0],
-                end: fetchInfo.end.toISOString().split('T')[0]
+                start: fetchInfo.startStr.split('T')[0],
+                end: fetchInfo.endStr.split('T')[0]
             };
             
             if (doctorSelect.value) {
@@ -128,7 +136,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error fetching appointments:', error);
                     failureCallback(error);
                 });
-        }
+        },
+        slotMinTime: '08:00:00',
+        slotMaxTime: '18:00:00',
+        allDaySlot: false,
+        slotDuration: '00:30:00',
+        height: 'auto'
     });
 
     function getEventClass(status) {
@@ -154,12 +167,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function showAppointmentDetails(event) {
-        var modal = $('#appointmentModal');
         var details = $('#appointmentDetails');
+        
+        // Format the date nicely
+        const startDate = new Date(event.start);
+        const endDate = new Date(event.end);
+        const dateTimeFormat = new Intl.DateTimeFormat('en', { 
+            dateStyle: 'full', 
+            timeStyle: 'short' 
+        });
         
         details.html(`
             <p><strong>Patient:</strong> ${event.title}</p>
-            <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
+            <p><strong>Start:</strong> ${dateTimeFormat.format(startDate)}</p>
+            <p><strong>End:</strong> ${dateTimeFormat.format(endDate)}</p>
             <p><strong>Status:</strong> ${event.extendedProps.status}</p>
         `);
 
@@ -175,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             $('#rescheduleAppointment').show();
         }
         
-        modal.modal('show');
+        appointmentModal.show();
     }
 
     // Handle appointment cancellation
@@ -191,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (response.ok) {
-                    $('#appointmentModal').modal('hide');
+                    appointmentModal.hide();
                     calendar.refetchEvents();
                     alert('Appointment cancelled successfully');
                 } else {
