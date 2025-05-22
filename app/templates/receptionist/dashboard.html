@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Appointments</h5>
                     <p class="card-text">View and manage appointments</p>
-                    <a href="{{ url_for('receptionist.view_appointments') }}" class="btn btn-info">Manage Appointments</a>
+                    <a href="{{ url_for('receptionist.appointment_calendar') }}" class="btn btn-info">Manage Appointments</a>
                 </div>
             </div>
         </div>
@@ -27,7 +27,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Patient Information</h5>
                     <p class="card-text">Look up patient information</p>
-                    <a href="{{ url_for('receptionist.lookup_patient_info') }}" class="btn btn-secondary">Patient Lookup</a>
+                    <a href="{{ url_for('receptionist.list_patients') }}" class="btn btn-secondary">Patient Lookup</a>
                 </div>
             </div>
         </div>

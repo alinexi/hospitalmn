@@ -3,9 +3,10 @@ from datetime import timedelta
 
 class Config:
     """Base configuration."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'postgresql://hospital_user:hospital_password@localhost:5432/hospital2025'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'postgresql://localhost/hospital')
     
     # Security settings
     DES_KEY_PATH = os.getenv('DES_KEY_PATH', 'instance/keys/des.key')

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Patient List</h1>
+        <a href="{{ url_for('receptionist.register_patient') }}" class="btn btn-primary">Register New Patient</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search by name, phone, or email..." value="{{ search_query }}">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                    {% if search_query %}
+                        <a href="{{ url_for('receptionist.list_patients') }}" class="btn btn-outline-secondary">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date of Birth</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients.items %}
+                <tr>
+                    <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                    <td>{{ patient.date_of_birth.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ patient.phone }}</td>
+                    <td>{{ patient.email or 'N/A' }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{{ url_for('receptionist.view_patient', patient_id=patient.id) }}" class="btn btn-sm btn-info">View</a>
+                            <a href="{{ url_for('receptionist.edit_patient', patient_id=patient.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{{ url_for('receptionist.schedule_appointment') }}?patient_id={{ patient.id }}" class="btn btn-sm btn-success">Schedule</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No patients found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if patients.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if patients.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('receptionist.list_patients', page=patients.prev_num, search=search_query) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in patients.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == patients.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('receptionist.list_patients', page=page_num, search=search_query) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if patients.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('receptionist.list_patients', page=patients.next_num, search=search_query) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 
