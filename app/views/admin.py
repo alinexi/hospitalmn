@@ -1,9 +1,8 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
+from app.models.user import User, Role
+from app import db
 from functools import wraps
-from flask import abort
-from flask_sqlalchemy import SQLAlchemy
 import json
 import os
 
@@ -46,7 +45,7 @@ def system_settings():
         flash('Settings updated successfully.', 'success')
     return render_template('admin/settings.html', settings=settings)
 
-@admin_bp.route('/audit_logs', methods=['GET'])
+@admin_bp.route('/audit-logs', methods=['GET'], endpoint='view_audit_logs')
 @login_required
 @admin_required
 def view_audit_logs():
@@ -69,4 +68,17 @@ def edit_user(user_id):
         db.session.commit()
         flash('User updated successfully.', 'success')
         return redirect(url_for('admin.manage_users'))
-    return render_template('admin/edit_user.html', user=user, roles=roles) 
+    return render_template('admin/edit_user.html', user=user, roles=roles)
+
+@admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.role.name == 'sysadmin':
+        flash('Cannot delete admin users.', 'danger')
+        return redirect(url_for('admin.manage_users'))
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully.', 'success')
+    return redirect(url_for('admin.manage_users')) 

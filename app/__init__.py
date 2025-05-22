@@ -30,17 +30,21 @@ def create_app(config_name='default'):
     # Register blueprints
     from app.views.auth import auth_bp
     from app.views.admin import admin_bp
-    from app.views.doctor import doctor_bp
     from app.views.patient import patient_bp
     from app.views.receptionist import receptionist_bp
     from app.views.main import main_bp
+    from app.views.chief_doctor import chief_doctor_bp
+    from app.views.curing_doctor import curing_doctor_bp
+    from app.views.consulting_doctor import consulting_doctor_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(doctor_bp)
     app.register_blueprint(patient_bp)
     app.register_blueprint(receptionist_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(chief_doctor_bp)
+    app.register_blueprint(curing_doctor_bp)
+    app.register_blueprint(consulting_doctor_bp)
 
     # Register error handlers
     from app.utils.error_handlers import register_error_handlers

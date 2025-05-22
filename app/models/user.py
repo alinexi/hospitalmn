@@ -73,7 +73,16 @@ class User(UserMixin, db.Model):
         return self.has_role('sysadmin')
 
     def is_doctor(self):
-        return self.role.name in ['chiefdoctor', 'curingdoctor', 'consultingdoctor']
+        return self.role.name in ['chief_doctor', 'curing_doctor', 'consulting_doctor']
+
+    def is_chief_doctor(self):
+        return self.has_role('chief_doctor')
+
+    def is_curing_doctor(self):
+        return self.has_role('curing_doctor')
+
+    def is_consulting_doctor(self):
+        return self.has_role('consulting_doctor')
 
     def is_receptionist(self):
         return self.has_role('receptionist')

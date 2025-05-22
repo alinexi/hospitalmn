@@ -22,19 +22,27 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if current_user.is_authenticated %}
-                        {% if current_user.is_admin() %}
+                        {% if current_user.role.name == 'sysadmin' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
                             </li>
-                        {% elif current_user.is_doctor() %}
+                        {% elif current_user.role.name == 'chief_doctor' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('doctor.dashboard') }}">Doctor Dashboard</a>
+                                <a class="nav-link" href="{{ url_for('chief_doctor.dashboard') }}">Chief Doctor Dashboard</a>
                             </li>
-                        {% elif current_user.is_receptionist() %}
+                        {% elif current_user.role.name == 'curing_doctor' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('curing_doctor.dashboard') }}">Curing Doctor Dashboard</a>
+                            </li>
+                        {% elif current_user.role.name == 'consulting_doctor' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('consulting_doctor.dashboard') }}">Consulting Doctor Dashboard</a>
+                            </li>
+                        {% elif current_user.role.name == 'receptionist' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('receptionist.dashboard') }}">Receptionist Dashboard</a>
                             </li>
-                        {% elif current_user.is_patient() %}
+                        {% elif current_user.role.name == 'patient' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('patient.dashboard') }}">Patient Dashboard</a>
                             </li>
