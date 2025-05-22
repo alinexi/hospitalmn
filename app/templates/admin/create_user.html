@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Create New User</h1>
+    <form method="POST" class="needs-validation" novalidate>
+        {{ form.csrf_token }}
+        <div class="mb-3">
+            <label for="username" class="form-label">Username:</label>
+            {{ form.username(class="form-control", required=true) }}
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email:</label>
+            {{ form.email(class="form-control", required=true) }}
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password:</label>
+            {{ form.password(class="form-control", required=true) }}
+        </div>
+        <div class="mb-3">
+            <label for="first_name" class="form-label">First Name:</label>
+            {{ form.first_name(class="form-control", required=true) }}
+        </div>
+        <div class="mb-3">
+            <label for="last_name" class="form-label">Last Name:</label>
+            {{ form.last_name(class="form-control", required=true) }}
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone:</label>
+            {{ form.phone(class="form-control", required=true) }}
+        </div>
+        <div class="mb-3">
+            <label for="role_id" class="form-label">Role:</label>
+            {{ form.role_id(class="form-control", required=true) }}
+        </div>
+        <button type="submit" class="btn btn-primary">Create User</button>
+        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

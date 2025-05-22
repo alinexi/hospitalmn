@@ -5,6 +5,9 @@ from app import db
 from functools import wraps
 import json
 import os
+from werkzeug.security import generate_password_hash
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SelectField, validators
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -81,4 +84,57 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     flash('User deleted successfully.', 'success')
-    return redirect(url_for('admin.manage_users')) 
+    return redirect(url_for('admin.manage_users'))
+
+class CreateUserForm(FlaskForm):
+    username = StringField('Username', [validators.DataRequired(), validators.Length(min=4, max=25)])
+    email = StringField('Email', [validators.DataRequired(), validators.Email()])
+    password = PasswordField('Password', [validators.DataRequired(), validators.Length(min=6)])
+    first_name = StringField('First Name', [validators.DataRequired()])
+    last_name = StringField('Last Name', [validators.DataRequired()])
+    phone = StringField('Phone', [validators.DataRequired()])
+    role_id = SelectField('Role', coerce=int, validators=[validators.DataRequired()])
+
+@admin_bp.route('/create_user', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_user():
+    form = CreateUserForm()
+    
+    # Get all roles and set them as choices for the role_id field
+    roles = Role.query.all()
+    form.role_id.choices = [(role.id, role.name) for role in roles]
+
+    if form.validate_on_submit():
+        try:
+            # Check if username or email already exists
+            if User.query.filter_by(username=form.username.data).first():
+                flash('Username already exists.', 'danger')
+                return render_template('admin/create_user.html', form=form)
+            
+            if User.query.filter_by(email=form.email.data).first():
+                flash('Email already exists.', 'danger')
+                return render_template('admin/create_user.html', form=form)
+
+            # Create new user
+            new_user = User(
+                username=form.username.data,
+                email=form.email.data,
+                password_hash=generate_password_hash(form.password.data),
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                phone=form.phone.data,
+                role_id=form.role_id.data
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+            flash('User created successfully!', 'success')
+            return redirect(url_for('admin.manage_users'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating user: {str(e)}', 'danger')
+            return render_template('admin/create_user.html', form=form)
+
+    # For GET requests or if form validation fails
+    return render_template('admin/create_user.html', form=form) 

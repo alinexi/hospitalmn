@@ -2,7 +2,10 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Manage Users</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Users</h1>
+        <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">Create New User</a>
+    </div>
     <table class="table table-striped">
         <thead>
             <tr>
