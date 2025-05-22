@@ -8,8 +8,9 @@ from functools import wraps
 from datetime import datetime, timedelta
 from sqlalchemy import or_
 from flask_wtf import FlaskForm
-from wtforms import StringField, DateField, SelectField, TelField, EmailField, TextAreaField
-from wtforms.validators import DataRequired, Email, Optional
+from wtforms import StringField, DateField, SelectField, TelField, EmailField, TextAreaField, TimeField, IntegerField
+from wtforms.validators import DataRequired, Email, Optional, ValidationError
+import pytz
 
 receptionist_bp = Blueprint('receptionist', __name__, url_prefix='/receptionist')
 
@@ -32,6 +33,23 @@ class PatientRegistrationForm(FlaskForm):
     ], validators=[Optional()])
     allergies = TextAreaField('Allergies', validators=[Optional()])
     medical_history = TextAreaField('Medical History', validators=[Optional()])
+
+class AppointmentForm(FlaskForm):
+    patient_id = SelectField('Patient', validators=[DataRequired()], coerce=int)
+    doctor_id = SelectField('Doctor', validators=[DataRequired()], coerce=int)
+    appointment_date = DateField('Date', validators=[DataRequired()])
+    appointment_time = TimeField('Time', validators=[DataRequired()])
+    duration = SelectField('Duration (minutes)', 
+                         choices=[(15, '15 minutes'), (30, '30 minutes'), 
+                                (45, '45 minutes'), (60, '1 hour')],
+                         validators=[DataRequired()],
+                         coerce=int)
+    reason = TextAreaField('Reason for Visit', validators=[DataRequired()])
+    notes = TextAreaField('Additional Notes', validators=[Optional()])
+
+    def validate_appointment_date(self, field):
+        if field.data < datetime.now().date():
+            raise ValidationError('Appointment date cannot be in the past')
 
 def receptionist_required(f):
     @wraps(f)
@@ -155,38 +173,58 @@ def appointment_calendar():
 @login_required
 @receptionist_required
 def schedule_appointment():
+    form = AppointmentForm()
+    
+    # Populate the select fields
+    patients = Patient.query.order_by(Patient.last_name).all()
+    doctors = User.query.join(Role).filter(Role.name.in_(['chief_doctor', 'curing_doctor', 'consulting_doctor'])).all()
+    
+    form.patient_id.choices = [(p.id, f"{p.first_name} {p.last_name}") for p in patients]
+    form.doctor_id.choices = [(d.id, f"Dr. {d.first_name} {d.last_name}") for d in doctors]
+    
+    # Pre-select patient if provided in URL
+    if request.args.get('patient_id') and request.method == 'GET':
+        form.patient_id.data = int(request.args.get('patient_id'))
+    
+    # Handle appointment rescheduling
     reschedule_id = request.args.get('reschedule', type=int)
-    appointment_to_reschedule = None
-    if reschedule_id:
-        appointment_to_reschedule = Appointment.query.get_or_404(reschedule_id)
-
-    if request.method == 'POST':
+    if reschedule_id and request.method == 'GET':
+        appointment = Appointment.query.get_or_404(reschedule_id)
+        form.patient_id.data = appointment.patient_id
+        form.doctor_id.data = appointment.doctor_id
+        form.appointment_date.data = appointment.appointment_date.date()
+        form.appointment_time.data = appointment.appointment_date.time()
+        form.duration.data = appointment.duration
+        form.reason.data = appointment.reason
+        form.notes.data = appointment.notes
+    
+    if form.validate_on_submit():
         try:
+            # Combine date and time
+            appointment_datetime = datetime.combine(
+                form.appointment_date.data,
+                form.appointment_time.data
+            )
+            
             if reschedule_id:
                 # Update existing appointment
-                appointment = appointment_to_reschedule
-                appointment.doctor_id = request.form['doctor_id']
-                appointment.appointment_date = datetime.strptime(
-                    f"{request.form['appointment_date']} {request.form['appointment_time']}", 
-                    '%Y-%m-%d %H:%M'
-                )
-                appointment.duration = int(request.form['duration'])
-                appointment.reason = request.form['reason']
-                appointment.notes = request.form.get('notes', '')
+                appointment = Appointment.query.get_or_404(reschedule_id)
+                appointment.doctor_id = form.doctor_id.data
+                appointment.appointment_date = appointment_datetime
+                appointment.duration = form.duration.data
+                appointment.reason = form.reason.data
+                appointment.notes = form.notes.data
                 appointment.status = 'scheduled'  # Reset status when rescheduling
                 flash('Appointment rescheduled successfully!', 'success')
             else:
                 # Create new appointment
                 new_appointment = Appointment(
-                    patient_id=request.form['patient_id'],
-                    doctor_id=request.form['doctor_id'],
-                    appointment_date=datetime.strptime(
-                        f"{request.form['appointment_date']} {request.form['appointment_time']}", 
-                        '%Y-%m-%d %H:%M'
-                    ),
-                    duration=int(request.form['duration']),
-                    reason=request.form['reason'],
-                    notes=request.form.get('notes', ''),
+                    patient_id=form.patient_id.data,
+                    doctor_id=form.doctor_id.data,
+                    appointment_date=appointment_datetime,
+                    duration=form.duration.data,
+                    reason=form.reason.data,
+                    notes=form.notes.data,
                     status='scheduled'
                 )
                 db.session.add(new_appointment)
@@ -197,13 +235,10 @@ def schedule_appointment():
         except Exception as e:
             db.session.rollback()
             flash(f'Error {"rescheduling" if reschedule_id else "scheduling"} appointment: {str(e)}', 'danger')
-
-    patients = Patient.query.order_by(Patient.last_name).all()
-    doctors = User.query.join(Role).filter(Role.name.in_(['chief_doctor', 'curing_doctor', 'consulting_doctor'])).all()
+    
     return render_template('receptionist/schedule_appointment.html', 
-                         patients=patients, 
-                         doctors=doctors,
-                         appointment=appointment_to_reschedule)
+                         form=form,
+                         today=datetime.now().date().isoformat())
 
 @receptionist_bp.route('/appointments/<int:appointment_id>/reschedule', methods=['POST'])
 @login_required
