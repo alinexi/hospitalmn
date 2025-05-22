@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=wsgi.py
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/hospital
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - ./instance:/app/instance
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+    networks:
+      - hospital-network
+
+  db:
+    image: postgres:12
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=hospital
+    ports:
+      - "5432:5432"
+    networks:
+      - hospital-network
+
+volumes:
+  postgres_data:
+
+networks:
+  hospital-network:
+    driver: bridge 
