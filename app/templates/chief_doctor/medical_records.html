@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Medical Records</h1>
-<table>
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Patient</th>
@@ -16,7 +16,7 @@
             <td>{{ record.patient.username }}</td>
             <td>{{ record.record }}</td>
             <td>
-                <a href="{{ url_for('chief_doctor.view_record', record_id=record.id) }}">View</a>
+                <a href="{{ url_for('chief_doctor.view_record', record_id=record.id) }}" class="btn btn-info">View</a>
             </td>
         </tr>
         {% endfor %}

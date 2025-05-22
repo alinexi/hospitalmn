@@ -1,6 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Patient Dashboard</h1>
-<p>Welcome to the patient dashboard. Here you can view your records and manage appointments.</p>
+<div class="container mt-4">
+    <h1>Patient Dashboard</h1>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Medical Records</h5>
+                    <p class="card-text">View your medical records</p>
+                    <a href="{{ url_for('patient.view_records') }}" class="btn btn-primary">View Records</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Appointments</h5>
+                    <p class="card-text">View and manage your appointments</p>
+                    <a href="{{ url_for('patient.manage_appointments') }}" class="btn btn-info">Manage Appointments</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %} 

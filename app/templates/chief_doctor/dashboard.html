@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Chief Doctor Dashboard</h1>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Medical Records</h5>
+                    <p class="card-text">View all patients' medical records</p>
+                    <a href="{{ url_for('chief_doctor.view_medical_records') }}" class="btn btn-primary">View Records</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Doctor Assignments</h5>
+                    <p class="card-text">Assign or reassign Curing Doctors to patients</p>
+                    <a href="{{ url_for('chief_doctor.assign_doctors') }}" class="btn btn-warning">Assign Doctors</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Audit Trail</h5>
+                    <p class="card-text">View medical records access history</p>
+                    <a href="{{ url_for('chief_doctor.view_audit_trail') }}" class="btn btn-info">View Audit Trail</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

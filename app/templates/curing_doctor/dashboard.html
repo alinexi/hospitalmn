@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Curing Doctor Dashboard</h1>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Patient Records</h5>
+                    <p class="card-text">View and manage your patients' records</p>
+                    <a href="{{ url_for('curing_doctor.view_patient_records') }}" class="btn btn-primary">View Records</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Grant Access</h5>
+                    <p class="card-text">Grant access to Consulting Doctors</p>
+                    <a href="{{ url_for('curing_doctor.grant_access') }}" class="btn btn-warning">Grant Access</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Appointments</h5>
+                    <p class="card-text">View and manage your appointments</p>
+                    <a href="{{ url_for('curing_doctor.manage_appointments') }}" class="btn btn-info">Manage Appointments</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

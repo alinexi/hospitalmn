@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Receptionist Dashboard</h1>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Patient Registration</h5>
+                    <p class="card-text">Register new patients in the system</p>
+                    <a href="{{ url_for('receptionist.register_patient') }}" class="btn btn-primary">Register Patient</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Appointments</h5>
+                    <p class="card-text">View and manage appointments</p>
+                    <a href="{{ url_for('receptionist.view_appointments') }}" class="btn btn-info">Manage Appointments</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Patient Information</h5>
+                    <p class="card-text">Look up patient information</p>
+                    <a href="{{ url_for('receptionist.lookup_patient_info') }}" class="btn btn-secondary">Patient Lookup</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
