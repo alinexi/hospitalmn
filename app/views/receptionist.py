@@ -10,7 +10,6 @@ from sqlalchemy import or_
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, SelectField, TelField, EmailField, TextAreaField, TimeField, IntegerField
 from wtforms.validators import DataRequired, Email, Optional, ValidationError
-import pytz
 
 receptionist_bp = Blueprint('receptionist', __name__, url_prefix='/receptionist')
 
