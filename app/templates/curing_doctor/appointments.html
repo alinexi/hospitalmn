@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Appointments</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td>{{ appointment.patient.username }}</td>
+            <td>{{ appointment.date }}</td>
+            <td>{{ appointment.time }}</td>
+            <td>
+                <a href="{{ url_for('curing_doctor.edit_appointment', appointment_id=appointment.id) }}">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

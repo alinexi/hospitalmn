@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Your Appointments</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td>{{ appointment.date }}</td>
+            <td>{{ appointment.time }}</td>
+            <td>
+                <a href="{{ url_for('patient.cancel_appointment', appointment_id=appointment.id) }}">Cancel</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

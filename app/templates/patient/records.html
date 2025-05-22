@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Your Records</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Record</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.record }}</td>
+            <td>
+                <a href="{{ url_for('patient.view_record', record_id=record.id) }}">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

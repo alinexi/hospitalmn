@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Medical Records</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Record</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in medical_records %}
+        <tr>
+            <td>{{ record.patient.username }}</td>
+            <td>{{ record.record }}</td>
+            <td>
+                <a href="{{ url_for('chief_doctor.view_record', record_id=record.id) }}">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

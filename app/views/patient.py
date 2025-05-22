@@ -18,4 +18,18 @@ def patient_required(f):
 @patient_required
 def dashboard():
     """Patient dashboard view."""
-    return render_template('patient/dashboard.html') 
+    return render_template('patient/dashboard.html')
+
+@patient_bp.route('/records', methods=['GET'])
+@login_required
+@patient_required
+def view_records():
+    # Logic to view patient records
+    return render_template('patient/records.html')
+
+@patient_bp.route('/appointments', methods=['GET', 'POST'])
+@login_required
+@patient_required
+def manage_appointments():
+    # Logic to request or cancel appointments
+    return render_template('patient/appointments.html') 

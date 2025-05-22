@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add Consultation Notes</h1>
+<form method="POST">
+    <label for="patient_id">Patient ID:</label>
+    <input type="text" id="patient_id" name="patient_id" required>
+    <label for="notes">Notes:</label>
+    <textarea id="notes" name="notes" required></textarea>
+    <button type="submit">Add Notes</button>
+</form>
+{% endblock %} 

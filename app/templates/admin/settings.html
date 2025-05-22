@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>System Settings</h1>
+<form method="POST">
+    <label for="password_policy">Password Policy:</label>
+    <input type="text" id="password_policy" name="password_policy" required>
+    <button type="submit">Save Settings</button>
+</form>
+{% endblock %} 

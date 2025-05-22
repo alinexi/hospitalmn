@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Assign Curing Doctors</h1>
+<form method="POST">
+    <label for="patient_id">Patient ID:</label>
+    <input type="text" id="patient_id" name="patient_id" required>
+    <label for="doctor_id">Doctor ID:</label>
+    <input type="text" id="doctor_id" name="doctor_id" required>
+    <button type="submit">Assign Doctor</button>
+</form>
+{% endblock %} 

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Patient Information</h1>
+<form method="GET">
+    <label for="patient_id">Patient ID:</label>
+    <input type="text" id="patient_id" name="patient_id" required>
+    <button type="submit">Lookup</button>
+</form>
+{% if patient %}
+<h2>Patient Details</h2>
+<p>Name: {{ patient.first_name }} {{ patient.last_name }}</p>
+<p>Email: {{ patient.email }}</p>
+<p>Phone: {{ patient.phone }}</p>
+{% endif %}
+{% endblock %} 

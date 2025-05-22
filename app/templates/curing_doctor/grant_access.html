@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Grant Access to Consulting Doctor</h1>
+<form method="POST">
+    <label for="patient_id">Patient ID:</label>
+    <input type="text" id="patient_id" name="patient_id" required>
+    <label for="consulting_doctor_id">Consulting Doctor ID:</label>
+    <input type="text" id="consulting_doctor_id" name="consulting_doctor_id" required>
+    <button type="submit">Grant Access</button>
+</form>
+{% endblock %} 
